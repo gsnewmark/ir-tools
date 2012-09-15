@@ -6,7 +6,7 @@
 
 ;; Forward declarations
 
-(declare tokenize-string normalize-token process-string merger)
+(declare tokenize-string normalize-token process-string merger fold-into-vec)
 
 ;; Public API
 
@@ -15,17 +15,18 @@
 string sequence. Returns a map with operation's aggregated results (:results)
 and number of normalized tokens in a given sequence (:tokens-count)."
   [op seq]
+  ;; TODO use fold-into-vec and fold
   (let [processed-strings (map (partial process-string op) seq)
         result (reduce (partial merge-with merger) processed-strings)]
     result))
 
 (defn process-string
   "Performs a given operation over all tokens of a given string.
-Returns a map with an operation's result (:results) as well as
+Returns a map with an operation's result set (:results) as well as
 overall number of normalized tokens in a string (:tokens-count)."
-  [op string]
+  [op ^String string]
   (let [tokens (tokenize-string string)]
-    {:results (map op tokens)
+    {:results (into (sorted-set) (map op tokens))
      :tokens-count (count tokens)}))
 
 (defn tokenize-string
@@ -66,9 +67,17 @@ is written in a separate line."
 ;; Private API
 
 (defn- merger
-  "Function for merge-with for process-string-seq - we have only seq and
-number values, so it can be this simple."
+  "Function for merge-with for process-string-seq - we have only
+collections and number values, so it can be this simple."
   [v1 v2]
-  (if (seq? v1)
+  (if (coll? v1)
     (into v1 v2)
     (+ v1 v2)))
+
+(comment
+  (defn- fold-into-vec
+   "Provided a reducer, concatenate into a vector.
+Note: same as (into [] coll), but parallel."
+   [coll]
+   (r/fold (r/monoid into vector) conj coll))
+  )
