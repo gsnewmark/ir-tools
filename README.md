@@ -5,7 +5,7 @@ Retrieval. Most of them are done as a part of IR course at university.
 
 ## Installation
 
-Download from http://example.com/FIXME.
+Download from https://github.com/gsnewmark/ir-tools.
 
 ## Usage
 
