@@ -17,15 +17,15 @@ the arguments."
     (if-not (empty? sources)
       (time
        (do
-         (let [ ;; Fill a dictionary with words from all files and get numbers
+         (let [;; Fill a dictionary with words from all files and get numbers
                ;; of words in those files as well as their sizes in bytes.
                sizes (doall
                       (map
                        (partial dict-api/fill-dict-from-file
                                 dict-api/dictionary)
                        sources))
-               total-words (apply + (map #(second (first %)) sizes))
-               total-size (apply + (map second sizes))]
+               total-words (apply + (map :tokens-count sizes))
+               total-size (apply + (map :size sizes))]
            ;; Print some info about files.
            (dorun (map print-file-info sources sizes))
            ;; Write a dictionary to a file.
@@ -36,14 +36,15 @@ the arguments."
            (println "Total amount of words in all files:" total-words)
            (println "Total size of all files (in bytes):" total-size)
            ;; TODO write size
-           (println "Amount of words in a dictionary:"))))
+           (println "Amount of words in a dictionary:"
+                    (dict-api/dict-size dict-api/dictionary)))))
       (println (str "You must provide at least 2 arguments - where to "
                     "write a dictionary and source of words.")))))
 
 (defn print-file-info
   "Prints file's name, number of words in it and its size."
-  [filename [[_ words-number] size]]
+  [filename {:keys [tokens-count size]}]
   (println "File:" filename)
-  (println "Amount of words:" words-number)
+  (println "Amount of words:" tokens-count)
   (println "Size of file (in bytes):" size)
   (println))

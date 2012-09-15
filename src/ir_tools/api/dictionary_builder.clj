@@ -27,9 +27,13 @@ to a file with a given filename (previous contents of file is erased)."
   [dict-ref filename]
   (common/write-collection-to-file @dict-ref filename))
 
-;; Private API
-
-(defn- add-word-to-dict
+(defn add-word-to-dict
   "Adds a given word to a dictionary represented by a given ref."
   [dict-ref word]
   (swap! dict-ref conj word))
+
+(defn dict-size
+  "Returns current number of words in a dictionary referenced by a
+given ref."
+  [dict-ref]
+  (count @dict-ref))

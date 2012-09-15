@@ -6,25 +6,27 @@
 
 ;; Forward declarations
 
-(declare tokenize-string normalize-token process-string)
+(declare tokenize-string normalize-token process-string merger)
 
-;; Common API
+;; Public API
 
 (defn process-string-seq
   "Performs a given operation over all tokens from elements of a given
-string sequence. Returns a list with operation's results and number of
-normalized tokens in a given sequence."
+string sequence. Returns a map with operation's aggregated results (:results)
+and number of normalized tokens in a given sequence (:tokens-count)."
   [op seq]
-  (let [processed-strings (map (partial process-string op) seq)]
-    [(map first processed-strings) (apply + (map second processed-strings))]))
+  (let [processed-strings (map (partial process-string op) seq)
+        result (reduce (partial merge-with merger) processed-strings)]
+    result))
 
 (defn process-string
   "Performs a given operation over all tokens of a given string.
-Returns a set with normalized tokens as well as overall number of
-normalized tokens in a string."
+Returns a map with an operation's result (:results) as well as
+overall number of normalized tokens in a string (:tokens-count)."
   [op string]
   (let [tokens (tokenize-string string)]
-    [(doall (map op tokens)) (count tokens)]))
+    {:results (map op tokens)
+     :tokens-count (count tokens)}))
 
 (defn tokenize-string
   "Retrieves all tokens (words) from a string."
@@ -47,12 +49,13 @@ normalized tokens in a string."
 
 (defn process-file
   "Process a sequence of strings extracted from a file with a given
-filename using a given operation. Returns a result of operation and
-a size of processed file."
+filename using a given operation. Returns a map with result of
+operation (:results), overall count of tokens (:tokens-count) and
+a size of processed file in bytes (:size)."
   [op filename]
   (with-open [rdr (io/reader filename)]
-    [(process-string-seq op (line-seq rdr))
-     (.length (io/file filename))]))
+    (assoc (process-string-seq op (line-seq rdr))
+      :size (.length (io/file filename)))))
 
 (defn write-collection-to-file
   "Writes a given data collection to a file with a given name. Each element
@@ -60,28 +63,12 @@ is written in a separate line."
   [col name]
   (spit name (cstr/join "\n" col)))
 
+;; Private API
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+(defn- merger
+  "Function for merge-with for process-string-seq - we have only seq and
+number values, so it can be this simple."
+  [v1 v2]
+  (if (seq? v1)
+    (into v1 v2)
+    (+ v1 v2)))
