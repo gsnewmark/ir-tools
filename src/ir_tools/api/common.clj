@@ -6,9 +6,10 @@
 
 ;; Forward declarations
 
-(declare tokenize-string normalize-token process-string merger fold-into-vec)
+(declare tokenize-string normalize-token process-string merger fold-into-vec
+         write-collection-to-file)
 
-;; Public API
+;; String processing
 
 (defn process-string-seq
   "Performs a given operation over all tokens from elements of a given
@@ -45,6 +46,22 @@ overall number of normalized tokens in a string (:tokens-count)."
       ;; a token.
       (cstr/replace #"(^[\-_']+)|([\-_']+$)" "")
       (cstr/lower-case)))
+
+;; Document ids
+
+;; TODO maybe cast files to vec or change this completely
+(defn fill-doc-ids
+  "Fills a document ids map (references by a d-ref) with a given list
+of files."
+  [d-ref files]
+  (doseq [i (range (count files))] (swap! d-ref assoc (nth files i) i)))
+
+(defn write-doc-ids-to-file
+  "Writes a document ids (from a d-ref) to a file with a given filename in a
+format 'filename - file id'."
+  [d-ref filename]
+  (let [ids (map #(format "%s - %s" (first %) (second %)) @d-ref)]
+    (write-collection-to-file ids filename)))
 
 ;; File interaction
 

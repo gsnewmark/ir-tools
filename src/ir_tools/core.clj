@@ -1,7 +1,8 @@
 (ns ir-tools.core
   "A command line interface for the tools."
   (:require [ir-tools.cli [dictionary :as dict-cli]
-                          [incidence-matrix :as imatrix-cli]])
+                          [incidence-matrix :as imatrix-cli]
+                          [inverted-index :as index-cli]])
   (:gen-class))
 
 
@@ -9,4 +10,4 @@
 (defn -main
   "Finds out what tool to call and calls it."
   [& args]
-  (apply imatrix-cli/build-incidence-matrix args))
+  (apply index-cli/build-inverted-index args))
