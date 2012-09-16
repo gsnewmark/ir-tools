@@ -16,8 +16,9 @@ a text."
 
 (defn fill-dict-from-file
   "Adds all words from a file with a given filename to a dictionary
-referenced by a given dict-ref. Returns a vector with number of words
-in a given file as first element and its size in bytes as second."
+referenced by a given dict-ref. Returns a map with number of words
+in a given file (:tokens-count), its size in bytes (:size) and a list of
+unique words (:results)."
   [dict-ref filename]
   (let [r (common/process-file #(str %) filename)]
     (doseq [w (:results r)] (add-word-to-dict dict-ref w))
