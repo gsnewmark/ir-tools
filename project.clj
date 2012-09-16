@@ -1,4 +1,4 @@
-(defproject ir-tools "0.2.0-SNAPSHOT"
+(defproject ir-tools "0.2.5-SNAPSHOT"
   :description "A set of tools for Information Retrieval university course."
   :url "https://github.com/gsnewmark/ir-tools"
   :license {:name "Eclipse Public License"
