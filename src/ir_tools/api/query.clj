@@ -8,8 +8,13 @@ both 'foo' and 'bar' or don't have 'baz'."
             [ir-tools.api.common :as common]))
 
 
+;; Forward declarations
+
+(declare divide-query get-ids-for-word perform-operation)
+
 ;; Public API
 
+;; TODO change loop-recur to something more idiomatic
 (defn process-query
   "Given a query (string), an index and doc ids perform a query over
 an index and return results (if any)."
@@ -25,6 +30,7 @@ an index and return results (if any)."
 
 ;; Private API
 
+;; TODO maybe NOT must be a part of operation not word
 (defn- divide-query
   "Given a query represented by a string divide it to a sequence of terms
 and a sequence of connectors."
