@@ -1,6 +1,7 @@
 (ns ir-tools.api.inverted-index
   "Functions to generate an inverted index."
-  (:require [ir-tools.api.common :as common]))
+  (:require [clojure.string :as cstr]
+            [ir-tools.api.common :as common]))
 
 
 ;; Inverted index. Represented by a sorted map - keys are words,
@@ -11,7 +12,7 @@
 (def doc-ids (atom {}))
 
 ;; Forward declarations
-(declare add-term-to-index index-entry-to-str)
+(declare add-term-to-index index-entry-to-str deserealize-index-string)
 
 ;; Public API
 
@@ -35,6 +36,19 @@ the given term is present."
   (let [strings (map index-entry-to-str @i-ref)]
     (common/write-collection-to-file strings filename)))
 
+(defn read-index-from-file
+  "Given a file produced by write-index-to-file, restores initial index."
+  [filename]
+  (common/read-datastructure-from-file filename (sorted-map)
+                                       deserealize-index-string))
+
+(defn read-index-doc-ids-from-file
+  "Given an index file produced by write-index-to-file and an doc ids file
+produced by a write-doc-ids-to-file, restores these both datastructures."
+  [index-file doc-ids-file]
+  [(read-index-from-file index-file)
+   (common/read-doc-ids-from-file doc-ids-file)])
+
 (defn add-term-to-index
   "Adds a given term to an inverted index (referenced by a i-ref)
 and adds a corresponding file's id to this term's set (using the
@@ -55,3 +69,10 @@ doc-ids map referenced by a d-ref)."
         s (apply
            str (interpose " " id-set))]
     (format "%s - %s" term s)))
+
+(defn- deserealize-index-string
+  "Deserializes an index row string from a file."
+  [string]
+  (let [[term indices] (cstr/split string #" \- ")
+        indices (map #(Integer/parseInt %) (cstr/split indices #" "))]
+    [term (apply sorted-set indices)]))

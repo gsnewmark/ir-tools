@@ -7,7 +7,8 @@
 ;; Forward declarations
 
 (declare tokenize-string normalize-token process-string merger fold-into-vec
-         write-collection-to-file)
+         write-collection-to-file read-datastructure-from-file
+         deserealize-doc-ids-string)
 
 ;; String processing
 
@@ -63,6 +64,11 @@ format 'filename - file id'."
   (let [ids (map #(format "%s - %s" (first %) (second %)) @d-ref)]
     (write-collection-to-file ids filename)))
 
+(defn read-doc-ids-from-file
+  "Given a file produced by write-doc-ids-to-file, restores initial doc ids."
+  [filename]
+  (read-datastructure-from-file filename {} deserealize-doc-ids-string))
+
 ;; File interaction
 
 (defn process-file
@@ -74,6 +80,13 @@ a size of processed file in bytes (:size)."
   (with-open [rdr (io/reader filename)]
     (assoc (process-string-seq op (line-seq rdr))
       :size (.length (io/file filename)))))
+
+(defn read-datastructure-from-file
+  "Reads a particular datastructure from a file, each element is formed
+using the given operation."
+  [filename ds op]
+  (with-open [rdr (io/reader filename)]
+    (into ds (map op (line-seq rdr)))))
 
 (defn write-collection-to-file
   "Writes a given data collection to a file with a given name. Each element
@@ -90,6 +103,12 @@ collections and number values, so it can be this simple."
   (if (coll? v1)
     (into v1 v2)
     (+ v1 v2)))
+
+(defn- deserealize-doc-ids-string
+  "Deserialize a doc ids row from a string."
+  [string]
+  (let [[file id] (cstr/split string #" \- ")]
+    [file (Integer/parseInt id)]))
 
 (comment
   (defn- fold-into-vec
