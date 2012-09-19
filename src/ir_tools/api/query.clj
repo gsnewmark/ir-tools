@@ -49,7 +49,7 @@ index."
         term (common/normalize-token (last splitted-word))
         maybe-not (first splitted-word)
         not (= "NOT" maybe-not)
-        ids (get index term)]
+        ids (get index term #{})]
     (if not (cset/difference doc-ids-set ids) ids)))
 
 (defn- perform-operation
