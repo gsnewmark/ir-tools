@@ -4,13 +4,13 @@
             [clojure.java.io :as io]))
 
 
-;; Forward declarations
+;; ## Forward declarations
 
 (declare tokenize-string normalize-token process-string merger
          write-collection-to-file read-datastructure-from-file
          deserealize-doc-ids-string)
 
-;; String processing
+;; ## String processing
 
 (defn process-string
   "Tokenizes a given string and transforms it using a given operation.
@@ -40,7 +40,7 @@ overall number of normalized tokens in a string (:tokens-count)."
       (cstr/replace #"(^[\-_']+)|([\-_']+$)" "")
       (cstr/lower-case)))
 
-;; Document ids
+;; ## Document ids
 
 ;; TODO maybe cast files to vec or change this completely
 (defn fill-doc-ids
@@ -61,7 +61,7 @@ format 'filename - file id'."
   [filename]
   (read-datastructure-from-file filename {} deserealize-doc-ids-string))
 
-;; File interaction
+;; ## File interaction
 
 (defn process-file
   "Process a tokens from string extracted from a file with a given filename
@@ -89,7 +89,7 @@ is written in a separate line."
   [col name]
   (spit name (cstr/join "\n" col)))
 
-;; Private API
+;; ## Private API
 
 (defn- merger
   "Function for merge-with for process-string-seq - we have only
