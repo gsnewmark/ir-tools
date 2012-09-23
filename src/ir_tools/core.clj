@@ -3,6 +3,7 @@
   (:require [ir-tools.cli [dictionary :as dict-cli]
                           [incidence-matrix :as imatrix-cli]
                           [inverted-index :as index-cli]
+                          [positional-index :as positional-cli]
                           [biword-index :as biword-cli]
                           [query :as query-cli]])
   (:gen-class))
@@ -14,6 +15,7 @@
   [& args]
   ;(apply imatrix-cli/build-incidence-matrix args)
   ;(apply index-cli/build-inverted-index args)
-  (apply biword-cli/build-biword-index args)
+  ;(apply biword-cli/build-biword-index args)
+  (apply positional-cli/build-positional-index args)
   ;(apply query-cli/run-query args)
   )

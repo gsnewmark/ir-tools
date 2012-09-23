@@ -42,7 +42,10 @@ index (referenced by a p-ref) or updates its positions."
         doc-id (get ids file)]
     (when-not (contains? @p-ref term)
       (swap! p-ref assoc term {:freq 0}))
-    (swap! p-ref #(update-in (update-in % [term :freq] + count) [term] assoc doc-id v))))
+    (swap! p-ref
+           #(update-in
+             (update-in % [term :freq] + count)
+             [term] assoc doc-id v))))
 
 ;; ## Private API
 
