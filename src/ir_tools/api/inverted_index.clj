@@ -14,7 +14,7 @@
 (def doc-ids (atom {}))
 
 ;; ## Forward declarations
-(declare add-term-to-index index-entry-to-str deserealize-index-string)
+(declare add-term-to-index index-entry-to-str deserialize-index-string)
 
 ;; ## Public API
 
@@ -42,7 +42,7 @@ the given term is present."
   "Given a file produced by write-index-to-file, restores initial index."
   [filename]
   (common/read-datastructure-from-file filename (sorted-map)
-                                       deserealize-index-string))
+                                       deserialize-index-string))
 
 (defn read-index-doc-ids-from-file
   "Given an index file produced by write-index-to-file and an doc ids file
@@ -72,7 +72,7 @@ doc-ids map referenced by a d-ref)."
            str (interpose " " id-set))]
     (format "%s - %s" term s)))
 
-(defn- deserealize-index-string
+(defn- deserialize-index-string
   "Deserializes an index row string from a file."
   [string]
   (let [[term indices] (cstr/split string #" \- ")
