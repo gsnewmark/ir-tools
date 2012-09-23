@@ -1,7 +1,7 @@
 (ns ir-tools.api.biword-index
   "Functions to generate a biword index."
-  (:require [ir-tools.api.common :as common]
-            [ir-tools.api.inverted-index :as ind]))
+  (:require [ir-tools.api [common :as common]
+                          [inverted-index :as ind]]))
 
 
 ;; ## Data Structures
