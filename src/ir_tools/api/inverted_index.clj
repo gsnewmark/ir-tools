@@ -4,6 +4,8 @@
             [ir-tools.api.common :as common]))
 
 
+;; ## Data Structures
+
 ;; Inverted index. Represented by a sorted map - keys are words,
 ;; values - sorted set of document ids.
 (def index (atom (sorted-map)))
@@ -11,10 +13,10 @@
 ;; A map with pairs filename - docID.
 (def doc-ids (atom {}))
 
-;; Forward declarations
+;; ## Forward declarations
 (declare add-term-to-index index-entry-to-str deserealize-index-string)
 
-;; Public API
+;; ## Public API
 
 (defn fill-index-from-file
   "Adds all words from a file with a given filename to an inverted index
@@ -23,7 +25,7 @@ referenced by a d-ref (must be generated before adding terms). Returns a
 map with current inverted index (:results), document ids (:doc-ids),
 number of words (:tokens-count) and file's size (:size)."
   [i-ref d-ref filename]
-  (let [r (common/process-file #(str %) filename)]
+  (let [r (common/process-file filename)]
     (doseq [term (:results r)] (add-term-to-index i-ref d-ref term filename))
     (assoc r :results @i-ref :doc-ids @d-ref)))
 
@@ -60,7 +62,7 @@ doc-ids map referenced by a d-ref)."
       (swap! i-ref assoc term (sorted-set)))
     (swap! i-ref update-in [term] conj doc-id)))
 
-;; Private API
+;; ## Private API
 
 (defn- index-entry-to-str
   "Forms a string representation of an index entry."

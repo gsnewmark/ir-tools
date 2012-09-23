@@ -4,15 +4,17 @@ a text."
   (:require [ir-tools.api.common :as common]))
 
 
+;; ## Data Structures
+
 ;; Dictionary with words. Represented with a sorted set - automatically
 ;; removes duplicates if any and sorts it.
 (def dictionary (atom (sorted-set)))
 
-;; Forward declarations
+;; ## Forward declarations
 
 (declare add-word-to-dict)
 
-;; Public API
+;; ## Public API
 
 (defn fill-dict-from-file
   "Adds all words from a file with a given filename to a dictionary
@@ -20,7 +22,7 @@ referenced by a given dict-ref. Returns a map with number of words
 in a given file (:tokens-count), its size in bytes (:size) and a list of
 unique words (:results)."
   [dict-ref filename]
-  (let [r (common/process-file #(str %) filename)]
+  (let [r (common/process-file filename)]
     (doseq [w (:results r)] (add-word-to-dict dict-ref w))
     r))
 

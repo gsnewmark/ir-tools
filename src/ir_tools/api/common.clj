@@ -6,30 +6,22 @@
 
 ;; Forward declarations
 
-(declare tokenize-string normalize-token process-string merger fold-into-vec
+(declare tokenize-string normalize-token process-string merger
          write-collection-to-file read-datastructure-from-file
          deserealize-doc-ids-string)
 
 ;; String processing
 
-(defn process-string-seq
-  "Performs a given operation over all tokens from elements of a given
-string sequence. Returns a map with operation's aggregated results (:results)
-and number of normalized tokens in a given sequence (:tokens-count)."
-  [op seq]
-  ;; TODO use fold-into-vec and fold
-  (let [processed-strings (map (partial process-string op) seq)
-        result (reduce (partial merge-with merger) processed-strings)]
-    result))
-
 (defn process-string
-  "Performs a given operation over all tokens of a given string.
-Returns a map with an operation's result set (:results) as well as
+  "Tokenizes a given string and transforms it using a given operation.
+Returns a map with an operation's result (:results) as well as
 overall number of normalized tokens in a string (:tokens-count)."
-  [op ^String string]
-  (let [tokens (tokenize-string string)]
-    {:results (into (sorted-set) (map op tokens))
-     :tokens-count (count tokens)}))
+  ([^String string]
+     (process-string #(into (sorted-set) %) string))
+  ([op ^String string]
+     (let [tokens (tokenize-string string)]
+       {:results (doall (op tokens))
+        :tokens-count (count tokens)})))
 
 (defn tokenize-string
   "Retrieves all tokens (words) from a string."
@@ -72,14 +64,17 @@ format 'filename - file id'."
 ;; File interaction
 
 (defn process-file
-  "Process a sequence of strings extracted from a file with a given
-filename using a given operation. Returns a map with result of
-operation (:results), overall count of tokens (:tokens-count) and
-a size of processed file in bytes (:size)."
-  [op filename]
-  (with-open [rdr (io/reader filename)]
-    (assoc (process-string-seq op (line-seq rdr))
-      :size (.length (io/file filename)))))
+  "Process a tokens from string extracted from a file with a given filename
+using a given operation. If operations isn't given - creates a
+sorted set of all tokens. Returns a map with result of
+operation (:results), overall count of tokens (:tokens-count) and a size of
+processed file in bytes (:size)."
+  ([filename]
+     (process-file #(into (sorted-set) %) filename))
+  ([op filename]
+     (let [string-contents (slurp filename)]
+       (assoc (process-string op string-contents)
+         :size (.length (io/file filename))))))
 
 (defn read-datastructure-from-file
   "Reads a particular datastructure from a file, each element is formed
@@ -109,11 +104,3 @@ collections and number values, so it can be this simple."
   [string]
   (let [[file id] (cstr/split string #" \- ")]
     [file (Integer/parseInt id)]))
-
-(comment
-  (defn- fold-into-vec
-   "Provided a reducer, concatenate into a vector.
-Note: same as (into [] coll), but parallel."
-   [coll]
-   (r/fold (r/monoid into vector) conj coll))
-  )

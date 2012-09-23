@@ -4,6 +4,8 @@
   (:import [java.util BitSet]))
 
 
+;; ## Data Structures
+
 ;; Term-document matrix. Represented by a sorted map - keys are words,
 ;; values - list of booleans (whether the word is in n-th document)
 (def matrix (atom (sorted-map)))
@@ -11,11 +13,11 @@
 ;; A map with pairs filename - docID.
 (def doc-ids (atom {}))
 
-;; Forward declarations
+;; ## Forward declarations
 
 (declare add-term-to-matrix matrix-row-to-str)
 
-;; Public API
+;; ## Public API
 
 (defn fill-matrix-from-file
   "Adds all words from a file with a given filename to an incidence matrix
@@ -24,7 +26,7 @@ referenced by a d-ref (must be generated before adding terms). Returns a
 map with current incidence matrix (:results), document ids (:doc-ids),
 number of words (:tokens-count) and file's size (:size)."
   [m-ref d-ref filename]
-  (let [r (common/process-file #(str %) filename)]
+  (let [r (common/process-file filename)]
     (doseq [term (:results r)] (add-term-to-matrix m-ref d-ref term filename))
     (assoc r :results @m-ref :doc-ids @d-ref)))
 
@@ -52,7 +54,7 @@ referenced by a d-ref)."
       (swap! m-ref assoc term (BitSet. (count ids))))
     (.set (get @m-ref term) doc-id)))
 
-;; Private API
+;; ## Private API
 
 (defn- matrix-row-to-str
   "Forms a string representation of a matrix row."

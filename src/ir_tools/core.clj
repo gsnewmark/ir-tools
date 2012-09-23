@@ -11,6 +11,7 @@
 (defn -main
   "Finds out what tool to call and calls it."
   [& args]
-  ;(apply imatrix-cli/build-incidence-matrix args)
+  (apply imatrix-cli/build-incidence-matrix args)
   ;(apply index-cli/build-inverted-index args)
-  (apply query-cli/run-query args))
+  ;(apply query-cli/run-query args)
+  )
