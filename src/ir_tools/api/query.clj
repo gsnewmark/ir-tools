@@ -53,7 +53,6 @@ and a sequence of connectors."
   "Returns a set with ids for a given word based on a map of all ids and
 index, biword-index (possibly nil)."
   [word index biword-index doc-ids-set]
-  (println word)
   (let [splitted-word (cstr/split word #" ")
         maybe-not (first splitted-word)
         not (= "NOT" maybe-not)
@@ -68,8 +67,6 @@ index, biword-index (possibly nil)."
                           true])
         ind (if (and phrase? biword-index) biword-index index)
         ids (get ind term #{})]
-    (println phrase?)
-    (println term)
     (if not (cset/difference doc-ids-set ids) ids)))
 
 (defn- perform-operation
@@ -84,9 +81,13 @@ index, biword-index (possibly nil)."
   "Shrinks a phrase to a seq of phrases of max-words lengths interposed
 with ANDs."
   [phrase max-words]
-  (let [words (cstr/split phrase #" ")]
+  (let [words (cstr/split phrase #" ")
+        not (= "NOT" (first words))
+        op (if not "OR" "AND")
+        prefix (if not "NOT " "")
+        words (if not (rest words) words)]
     (if (> (count words) max-words)
-      (interpose "AND"
-                 (map #(apply str (interpose " " %))
+      (interpose op
+                 (map #(apply str prefix (interpose " " %))
                       (partition max-words 1 words)))
       (list phrase))))
