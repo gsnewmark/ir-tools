@@ -6,7 +6,8 @@
                           [positional-index :as positional-cli]
                           [biword-index :as biword-cli]
                           [query :as query-cli]
-                          [phrase-query :as biword-query-cli]])
+                          [phrase-query :as biword-query-cli]
+                          [positional-query :as positional-query-cli]])
   (:gen-class))
 
 
@@ -20,4 +21,5 @@
   ;(apply positional-cli/build-positional-index args)
   ;(apply query-cli/run-query args)
   (apply biword-query-cli/run-query args)
+  ;(apply positional-query-cli/run-query args)
   )
