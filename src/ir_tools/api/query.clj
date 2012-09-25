@@ -70,7 +70,7 @@ index, biword-index (possibly nil)."
         not (= "NOT" maybe-not)
         words (if not (rest splitted-word) splitted-word)
         [term phrase?] (if (empty? (rest words))
-                         [(common/normalize-token (first splitted-word))
+                         [(common/normalize-token (first words))
                           false]
                          [(apply
                            str

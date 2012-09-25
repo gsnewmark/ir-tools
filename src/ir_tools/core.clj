@@ -20,6 +20,6 @@
   ;(apply biword-cli/build-biword-index args)
   ;(apply positional-cli/build-positional-index args)
   ;(apply query-cli/run-query args)
-  (apply biword-query-cli/run-query args)
-  ;(apply positional-query-cli/run-query args)
+  ;(apply biword-query-cli/run-query args)
+  (apply positional-query-cli/run-query args)
   )
