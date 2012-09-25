@@ -1,6 +1,8 @@
 (ns ir-tools.api.positional-index
   "Functions to generate a positional index."
-  (:require [ir-tools.api.common :as common]))
+  (:require [clojure.string :as cstr]
+            [ir-tools.api [common :as common]
+                          [inverted-index :as inv]]))
 
 
 ;; ## Data Structures
@@ -17,7 +19,8 @@
 (def doc-ids (atom {}))
 
 ;; ## Forward Declarations
-(declare generate-term-position add-term-to-positional-index)
+(declare generate-term-position add-term-to-positional-index
+         deserialize-positional-index-string positional-index-entry-to-string)
 
 ;; ## Public API
 
@@ -47,6 +50,24 @@ index (referenced by a p-ref) or updates its positions."
              (update-in % [term :freq] + count)
              [term] assoc doc-id v))))
 
+(defn write-positional-index-to-file
+  "Writes a positional index to a file."
+  [p-ref filename]
+  (inv/write-index-to-file p-ref filename positional-index-entry-to-string))
+
+(defn read-positional-index-from-file
+  "Given a positional index file, restores initial positional index."
+  [filename]
+  (inv/read-index-from-file filename deserialize-positional-index-string))
+
+(defn read-positional-index-doc-ids-from-file
+  "Given a file with a positional index and a file with document ids,
+restores both of them."
+  [index-filename doc-ids-filename]
+  [(read-positional-index-from-file index-filename)
+   (common/read-doc-ids-from-file doc-ids-filename)])
+
+
 ;; ## Private API
 
 (defn- generate-term-position
@@ -59,3 +80,15 @@ many times the term is found in a document."
    (map #(let [[k v] %] {k {:pos v :count (count v)}})
         (reduce (partial merge-with into) {}
                 (map-indexed #(hash-map %2 (sorted-set %1)) tokens-seq)))))
+
+(defn- deserialize-positional-index-string
+  "Deserializes an index row string from a file."
+  [string]
+  (let [[term clj-str] (cstr/split string #" \- ")
+        values-map (read-string clj-str)]
+    [term values-map]))
+
+(defn- positional-index-entry-to-string
+  [entry]
+  (let [[term value-map] entry]
+    (format "%s - %s" term value-map)))

@@ -33,8 +33,9 @@
            (dorun (map common/print-file-info sources sizes))
            (common-api/write-doc-ids-to-file
             positional-api/doc-ids file-to-write-ids)
-           (api/write-index-to-file positional-api/positional-index
-                                    file-to-write)
+           (positional-api/write-positional-index-to-file
+            positional-api/positional-index
+            file-to-write)
            (println (apply str (repeat 80 "-")))
            (println)
            (println "Total amount of words in all files:" total-words)

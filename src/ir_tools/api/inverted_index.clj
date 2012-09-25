@@ -33,23 +33,29 @@ number of words (:tokens-count) and file's size (:size)."
   "Writes an inverted index (from i-ref) to a file with a given
 filename (using the document ids map referenced by d-ref) in a format
 'term - docs', where docs is a list of document ids of documents where
-the given term is present."
-  [i-ref filename]
-  (let [strings (map index-entry-to-str @i-ref)]
-    (common/write-collection-to-file strings filename)))
+the given term is present. Optional third argument is a function that
+transforms an entry from an index to a string."
+  ([i-ref filename]
+     (write-index-to-file i-ref filename index-entry-to-str))
+  ([i-ref filename stringifier]
+     (let [strings (map stringifier @i-ref)]
+       (common/write-collection-to-file strings filename))))
 
 (defn read-index-from-file
   "Given a file produced by write-index-to-file, restores initial index."
-  [filename]
-  (common/read-datastructure-from-file filename (sorted-map)
-                                       deserialize-index-string))
+  ([filename]
+     (read-index-from-file filename deserialize-index-string))
+  ([filename reader]
+     (common/read-datastructure-from-file filename (sorted-map) reader)))
 
 (defn read-index-doc-ids-from-file
   "Given an index file produced by write-index-to-file and an doc ids file
-produced by a write-doc-ids-to-file, restores these both datastructures."
-  [index-file doc-ids-file]
-  [(read-index-from-file index-file)
-   (common/read-doc-ids-from-file doc-ids-file)])
+produced by a write-doc-ids-to-file, restores these both datastructures.
+Optional second argument is a function that transforms a string from file
+into a pair key - value."
+  [index-filename doc-ids-filename]
+  [(read-index-from-file index-filename)
+   (common/read-doc-ids-from-file doc-ids-filename)])
 
 (defn add-term-to-index
   "Adds a given term to an inverted index (referenced by a i-ref)
