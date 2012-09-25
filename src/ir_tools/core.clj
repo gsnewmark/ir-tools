@@ -5,7 +5,8 @@
                           [inverted-index :as index-cli]
                           [positional-index :as positional-cli]
                           [biword-index :as biword-cli]
-                          [query :as query-cli]])
+                          [query :as query-cli]
+                          [phrase-query :as biword-query-cli]])
   (:gen-class))
 
 
@@ -16,6 +17,7 @@
   ;(apply imatrix-cli/build-incidence-matrix args)
   ;(apply index-cli/build-inverted-index args)
   ;(apply biword-cli/build-biword-index args)
-  (apply positional-cli/build-positional-index args)
+  ;(apply positional-cli/build-positional-index args)
   ;(apply query-cli/run-query args)
+  (apply biword-query-cli/run-query args)
   )

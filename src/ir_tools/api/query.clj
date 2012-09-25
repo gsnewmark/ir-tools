@@ -8,48 +8,68 @@ both 'foo' and 'bar' or don't have 'baz'."
             [ir-tools.api.common :as common]))
 
 
-;; Forward declarations
+;; ## Forward declarations
 
-(declare divide-query get-ids-for-word perform-operation)
+(declare divide-query get-ids-for-word perform-operation shrink-phrase)
 
-;; Public API
+;; ## Public API
 
 ;; TODO change loop-recur to something more idiomatic
 (defn process-query
   "Given a query (string), an index and doc ids perform a query over
-an index and return results (if any)."
-  [query index doc-ids]
-  (let [doc-ids-set (into #{} (vals doc-ids))
-        [words operations] (divide-query query)
-        words-sets (map #(get-ids-for-word % index doc-ids-set) words)]
-    (loop [ws words-sets ops operations]
-      (if (empty? ops)
-        (first ws)
-        (let [n (perform-operation (first ws) (first ops) (second ws))]
-          (recur (cons n (drop 2 ws)) (rest ops)))))))
+an index and return results (if any). Optionally you can pass a reference
+to a biword index to make the phrases query possible."
+  ([query index doc-ids]
+     (process-query query index nil doc-ids))
+  ([query index biword-index doc-ids]
+     (let [doc-ids-set (into #{} (vals doc-ids))
+           phrase? (if biword-index true false)
+           max-words (if biword-index 2 1)
+           [words operations] (divide-query query phrase? max-words)
+           words-sets (map
+                       #(get-ids-for-word % index biword-index doc-ids-set)
+                       words)]
+       (loop [ws words-sets ops operations]
+         (if (empty? ops)
+           (first ws)
+           (let [n (perform-operation (first ws) (first ops) (second ws))]
+             (recur (cons n (drop 2 ws)) (rest ops))))))))
 
-;; Private API
+;; TODO refactor this
+;; ## Private API
 
 ;; TODO maybe NOT must be a part of operation not word
 (defn- divide-query
   "Given a query represented by a string divide it to a sequence of terms
 and a sequence of connectors."
-  [query]
-  (let [r (map cstr/trim
-               (cstr/split query #"(?<=AND|OR)|(?=AND|OR)"))
+  [query phrase? max-words]
+  (let [r (flatten (map #(shrink-phrase (cstr/trim %) max-words)
+                        (cstr/split query #"(?<=AND|OR)|(?=AND|OR)")))
         words (take-nth 2 r)
         operations (map #(keyword (cstr/lower-case %)) (take-nth 2 (rest r)))]
     [words operations]))
 
 (defn- get-ids-for-word
   "Returns a set with ids for a given word based on a map of all ids and
-index."
-  [word index doc-ids-set]
+index, biword-index (possibly nil)."
+  [word index biword-index doc-ids-set]
+  (println word)
   (let [splitted-word (cstr/split word #" ")
-        term (common/normalize-token (last splitted-word))
         maybe-not (first splitted-word)
         not (= "NOT" maybe-not)
-        ids (get index term #{})]
+        words (if not (rest splitted-word) splitted-word)
+        [term phrase?] (if (empty? (rest words))
+                         [(common/normalize-token (first splitted-word))
+                          false]
+                         [(apply
+                           str
+                           (interpose " "
+                                      (map common/normalize-token words)))
+                          true])
+        ind (if (and phrase? biword-index) biword-index index)
+        ids (get ind term #{})]
+    (println phrase?)
+    (println term)
     (if not (cset/difference doc-ids-set ids) ids)))
 
 (defn- perform-operation
@@ -59,3 +79,14 @@ index."
    (= op :and) (cset/intersection set1 set2)
    (= op :or) (cset/union set1 set2)
    :else nil))
+
+(defn- shrink-phrase
+  "Shrinks a phrase to a seq of phrases of max-words lengths interposed
+with ANDs."
+  [phrase max-words]
+  (let [words (cstr/split phrase #" ")]
+    (if (> (count words) max-words)
+      (interpose "AND"
+                 (map #(apply str (interpose " " %))
+                      (partition max-words 1 words)))
+      (list phrase))))
