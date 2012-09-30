@@ -24,7 +24,12 @@
   "Add all words from a given inverted index to a given binary tree and
 binary tree with inverted terms."
   [i-ref t-ref it-ref]
-  (let [terms (keys @i-ref)]
+  (let [terms (keys @i-ref)
+        length (count terms)
+        part-size (/ length 2)
+        first-part (reverse (take part-size terms))
+        second-part (drop part-size terms)
+        terms (interleave first-part second-part)]
     (doseq [t terms]
       (add-term-to-tree t-ref it-ref t))))
 
