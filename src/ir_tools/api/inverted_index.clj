@@ -31,10 +31,9 @@ number of words (:tokens-count) and file's size (:size)."
 
 (defn write-index-to-file
   "Writes an inverted index (from i-ref) to a file with a given
-filename (using the document ids map referenced by d-ref) in a format
-'term - docs', where docs is a list of document ids of documents where
-the given term is present. Optional third argument is a function that
-transforms an entry from an index to a string."
+filename in a format 'term - docs', where docs is a list of document
+ ids of documents where the given term is present. Optional third argument
+ is a function that transforms an entry from an index to a string."
   ([i-ref filename]
      (write-index-to-file i-ref filename index-entry-to-str))
   ([i-ref filename stringifier]

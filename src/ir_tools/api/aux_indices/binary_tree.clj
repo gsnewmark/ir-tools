@@ -24,11 +24,12 @@ root."
   "Adds a node at a proper position of a given binary tree."
   [node tree]
   (cond
-   (nil? tree) (create-tree node)
+   (nil? tree)
+    (create-tree node)
    (< (.compareTo node (:key tree)) 0)
-   (->TreeNode (:key tree) (add-node node (:left tree)) (:right tree))
+    (->TreeNode (:key tree) (add-node node (:left tree)) (:right tree))
    (> (.compareTo node (:key tree)) 0)
-   (->TreeNode (:key tree) (:left tree) (add-node node (:right tree)))
+    (->TreeNode (:key tree) (:left tree) (add-node node (:right tree)))
    :else tree))
 
 ;; ## Private API

@@ -7,7 +7,9 @@
                           [biword-index :as biword-cli]
                           [query :as query-cli]
                           [phrase-query :as biword-query-cli]
-                          [positional-query :as positional-query-cli]])
+                          [positional-query :as positional-query-cli]]
+            [ir-tools.cli.aux-indices
+              [permuterm-index :as permuterm-index-cli]])
   (:gen-class))
 
 
@@ -21,5 +23,6 @@
   ;(apply positional-cli/build-positional-index args)
   ;(apply query-cli/run-query args)
   ;(apply biword-query-cli/run-query args)
-  (apply positional-query-cli/run-query args)
+  ;(apply positional-query-cli/run-query args)
+  (apply permuterm-index-cli/build-permuterm-index args)
   )
