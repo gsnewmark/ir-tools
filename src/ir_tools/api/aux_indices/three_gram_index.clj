@@ -6,7 +6,8 @@
 
 ;; ## Data Structures
 
-;; Sorted map with a 3-grams of words as keys and a 'normal' term as a value.
+;; Sorted map with a 3-grams of words as keys and a set of 'normal' terms
+;; as a value.
 (def three-gram-index (atom (sorted-map)))
 
 ;; ## Forward declarations
@@ -27,19 +28,23 @@
   [g-ref term]
   (let [grams (generate-n-grams term 3)]
     (doseq [g grams]
-      (swap! g-ref assoc g term))))
+      (when-not (contains? @g-ref g)
+        (swap! g-ref assoc g (sorted-set)))
+      (swap! g-ref update-in [g] conj term))))
 
 (defn write-gram-index-to-file
   "Writes a n-gram index (from g-ref) to a file with a given
 filename in a format 'gram - term'."
   [g-ref filename]
-  (i-api/write-index-to-file g-ref filename
-                             #(let [[f s] %] (format "%s - %s" f s))))
+  (i-api/write-index-to-file g-ref filename))
 
 (defn read-gram-index-from-file
   "Given a file with n-gram index, create this index in a memory."
   [filename]
-  (i-api/read-index-from-file filename #(cstr/split % #" - ")))
+  (i-api/read-index-from-file filename
+                              #(let [[g terms] (cstr/split % #" - ")
+                                     terms (cstr/split terms #" ")]
+                                 [g (apply sorted-set terms)])))
 
 ;; ## Private API
 

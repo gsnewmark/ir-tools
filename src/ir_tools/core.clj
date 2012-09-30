@@ -9,7 +9,8 @@
                           [phrase-query :as biword-query-cli]
                           [positional-query :as positional-query-cli]]
             [ir-tools.cli.aux-indices
-              [permuterm-index :as permuterm-index-cli]])
+             [permuterm-index :as permuterm-index-cli]
+             [three-gram-index :as three-gram-index-cli]])
   (:gen-class))
 
 
@@ -24,5 +25,6 @@
   ;(apply query-cli/run-query args)
   ;(apply biword-query-cli/run-query args)
   ;(apply positional-query-cli/run-query args)
-  (apply permuterm-index-cli/build-permuterm-index args)
+  ;(apply permuterm-index-cli/build-permuterm-index args)
+  (apply three-gram-index-cli/build-three-gram-index args)
   )
