@@ -9,7 +9,7 @@ are supported: * - any number of any symbols. Based on a permuterm index."
 
 ;; ## Forward declarations
 
-(declare get-ids-for-words get-words-for-wildcard rotate-wildcard
+(declare get-ids-for-word get-words-for-wildcard rotate-wildcard
          filter-words)
 
 ;; ## Public API
@@ -17,26 +17,26 @@ are supported: * - any number of any symbols. Based on a permuterm index."
 (defn process-query
   "Given a word with a wildcard, index, doc ids and an auxiliary index find
 documents where the given word is present."
-  [query index doc-ids aux-index]
+  [query index aux-index doc-ids]
   (let [doc-ids-set (into #{} (vals doc-ids))
-        words (get-words-for-wildcard query)
-        words-sets (map
-                       #(get-ids-for-word % index doc-ids-set aux-index)
-                       words)]
-    (reduce into #{} words-sets)))
+        words (get-words-for-wildcard query aux-index)
+        words-sets (map #(vector % (get-ids-for-word % index)) words)]
+    (into (sorted-map) words-sets)))
 
 ;; ## Private API
 
-(defn- get-ids-for-words
-  "Returns a set with ids for a given possible words."
-  [words index doc-ids-set aux-index]
-  [])
+(defn- get-ids-for-word
+  "Returns a set with ids for a given possible word."
+  [word index]
+  (get index word))
 
 (defn- get-words-for-wildcard
   "Returns all words that match a given wildcard query."
   [query aux-index]
   (let [[rotated-term mid] (rotate-wildcard query)
         rotations (keys aux-index)
+        ;; TODO somehow optimize this
+        ;(take-while #(>= 0 (.compareTo % rotated-term)) (keys aux-index))
         possible-rots (filter #(.startsWith % rotated-term) rotations)
         possible-words (map #(get aux-index %) possible-rots)
         words (filter-words possible-words mid)]
@@ -55,7 +55,8 @@ any)."
         sufix (apply str (drop i sufix))]
     [(str sufix "$" prefix) mid]))
 
-;; TODO preserve sequence of parts (whats before, whats after)
+;; TODO preserve sequence of parts (whats before, whats after) if more than
+;; one element in parts
 (defn- filter-words
   "Returns words that contain all parts"
   [words parts]

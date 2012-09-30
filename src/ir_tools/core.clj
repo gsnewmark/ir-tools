@@ -7,6 +7,7 @@
                           [biword-index :as biword-cli]
                           [query :as query-cli]
                           [phrase-query :as biword-query-cli]
+                          [wildcard-query :as wildcard-query-cli]
                           [positional-query :as positional-query-cli]]
             [ir-tools.cli.aux-indices
              [permuterm-index :as permuterm-index-cli]
@@ -28,5 +29,6 @@
   ;(apply positional-query-cli/run-query args)
   ;(apply permuterm-index-cli/build-permuterm-index args)
   ;(apply three-gram-index-cli/build-three-gram-index args)
-  (apply binary-tree-cli/build-binary-tree args)
+  ;(apply binary-tree-cli/build-binary-tree args)
+  (apply wildcard-query-cli/run-query args)
   )
