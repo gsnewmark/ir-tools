@@ -87,7 +87,10 @@ using the given operation."
   "Writes a given data collection to a file with a given name. Each element
 is written in a separate line."
   [col name]
-  (spit name (cstr/join "\n" col)))
+  (with-open [wrtr (io/writer name)]
+    (doseq [s col]
+      (.write wrtr s)
+      (.newLine wrtr))))
 
 ;; ## Private API
 
