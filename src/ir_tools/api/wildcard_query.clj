@@ -10,7 +10,7 @@ are supported: * - any number of any symbols. Based on a permuterm index."
 ;; ## Forward declarations
 
 (declare get-ids-for-word get-words-for-wildcard rotate-wildcard
-         filter-words)
+         filter-words check-word)
 
 ;; ## Public API
 
@@ -60,5 +60,18 @@ any)."
 (defn- filter-words
   "Returns words that contain all parts"
   [words parts]
-  (letfn [(reducer [x y] (filter #(<= 0 (.indexOf % y)) x))]
-    (reduce reducer words parts)))
+  (filter #(check-word parts %) words))
+
+(defn- check-word
+  "Checks whether the given word has all parts in a given order."
+  [parts word]
+  (if (reduce #(if %1
+                 (let [p (.indexOf %1 %2)]
+                   (if (<= 0 p)
+                     (.substring %1 (+ p (count %2)))
+                     false)
+                   )
+                 false)
+              word parts)
+    true
+    false))
