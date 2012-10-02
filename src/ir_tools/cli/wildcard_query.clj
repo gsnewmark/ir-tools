@@ -20,7 +20,7 @@
                              aux-index-file)
             query-results
             (map
-             #(query-api/process-query % index permuterm-index doc-ids)
+             #(query-api/process-query % index permuterm-index)
              queries)]
         (doseq [result query-results] (println result)))
       (println (str "You must provide at least 4 arguments - file with "

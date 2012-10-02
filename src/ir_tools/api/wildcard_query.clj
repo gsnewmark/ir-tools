@@ -1,10 +1,7 @@
 (ns ir-tools.api.wildcard-query
   "Functions to interpret user's queries with a wildcards. Wildcards that
 are supported: * - any number of any symbols. Based on a permuterm index."
-  (:require [clojure [string :as cstr]
-                     [set :as cset]]
-            [ir-tools.api [common :as common]
-                          [query :as query]]))
+  (:require [clojure [string :as cstr]]))
 
 
 ;; ## Forward declarations
@@ -17,9 +14,8 @@ are supported: * - any number of any symbols. Based on a permuterm index."
 (defn process-query
   "Given a word with a wildcard, index, doc ids and an auxiliary index find
 documents where the given word is present."
-  [query index aux-index doc-ids]
-  (let [doc-ids-set (into #{} (vals doc-ids))
-        words (get-words-for-wildcard query aux-index)
+  [query index aux-index]
+  (let [words (get-words-for-wildcard query aux-index)
         words-sets (map #(vector % (get-ids-for-word % index)) words)]
     (into (sorted-map) words-sets)))
 
