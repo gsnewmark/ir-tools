@@ -46,10 +46,18 @@ filename in a format 'gram - term'."
                                      terms (cstr/split terms #" ")]
                                  [g (apply sorted-set terms)])))
 
-;; ## Private API
+(defn wrap-word
+  "Adds a bounds symbol at words bounds."
+  [word]
+  (str "$" word "$"))
 
-(defn- generate-n-grams
-  "Generate all n-grams for a given word and a given n."
-  [word n]
-  (let [word (str "$" word "$")]
-    (doall (map (partial apply str) (partition n 1 word)))))
+(defn generate-n-grams
+  "Generate all n-grams for a given word and a given n. Optional third
+argument specifies whether to add $ to beginning and end of a word."
+  ([word n]
+     (generate-n-grams word n true))
+  ([word n add]
+     (let [word (if add (wrap-word word) word)]
+       (if (<= n (count word))
+         (doall (map (partial apply str) (partition n 1 word)))
+         word))))
