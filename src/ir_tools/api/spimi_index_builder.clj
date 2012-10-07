@@ -30,7 +30,7 @@ to one inverted index."
       (index-api/fill-index-from-file index-api/index
                                       index-api/doc-ids file))
     (spit (str @i) @index-api/index)
-    (swap i 1)))
+    (swap! i (fn [_] 1))))
 
 ;; ## Private API
 
