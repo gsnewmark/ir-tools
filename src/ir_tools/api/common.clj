@@ -89,7 +89,7 @@ is written in a separate line."
   [col name]
   (with-open [wrtr (io/writer name)]
     (doseq [s col]
-      (.write wrtr s)
+      (.write wrtr (str s))
       (.newLine wrtr))))
 
 ;; ## Private API

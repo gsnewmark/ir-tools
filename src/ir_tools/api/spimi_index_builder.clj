@@ -1,13 +1,15 @@
 (ns ir-tools.api.spimi-index-builder
   "Generates an (inverted) index for a collection of documents using
 the SPIMI algorithm (http://nlp.stanford.edu/IR-book/html/htmledition/single-pass-in-memory-indexing-1.html)."
-  (:require [ir-tools.api.inverted-index :as index-api]
+  (:require [clojure.java.io :as io]
+            [ir-tools.api.inverted-index :as index-api]
             [ir-tools.api.common :as common-api])
   (:import [java.io File]))
 
 ;; ## Forward Declarations
 
-(declare get-file-names get-available-memory has-memory?)
+(declare get-file-names get-available-memory has-memory?
+         write-temp-index-to-file)
 
 ;; ## Public API
 
@@ -23,16 +25,26 @@ to one inverted index."
   (let [filenames (get-file-names col)]
     (common-api/fill-doc-ids index-api/doc-ids filenames)
     (doseq [file filenames]
-      (when-not (has-memory?)
-        (spit (str @i) @index-api/index)
-        (swap! i inc)
-        (swap! index-api/index (fn [_] (sorted-map))))
+      (when-not (has-memory? (.length (File. file)))
+        (write-temp-index-to-file))
       (index-api/fill-index-from-file index-api/index
                                       index-api/doc-ids file))
-    (spit (str @i) @index-api/index)
-    (swap! i (fn [_] 1))))
+    (write-temp-index-to-file)
+    (swap! i (fn [_] 1))
+    nil))
 
 ;; ## Private API
+
+(defn- join-files
+  "Join all temporary index files (with names 1, 2, 3...) into one big index."
+  [last-name]
+)
+
+(defn- write-temp-index-to-file
+  []
+  (common-api/write-collection-to-file @index-api/index (str @i))
+  (swap! i inc)
+  (swap! index-api/index (fn [_] (sorted-map))))
 
 ;; TODO make recursive
 (defn- get-file-names
@@ -51,13 +63,17 @@ to one inverted index."
         alloc-mem (. r totalMemory)]
     (+ free-mem (- max-mem alloc-mem))))
 
-;; TODO some better algorithm to find whether enough memory (not based
-;; on a 0.15 constant percent, but maybe on actual file/index sizes).
 (defn- has-memory?
-  "Checks whether the program has enough memory to continue working."
-  []
-  (let [r (Runtime/getRuntime)
-        total-mem (. r maxMemory)
-        available-mem (get-available-memory)]
-    (println total-mem available-mem)
-    (<= 0.15 (double (/ available-mem total-mem)))))
+  "Checks whether the program has enough memory to continue working.
+Arguments specifies how much memory will be used on a next step and
+what percent of a memory should remain free."
+  ([memory-to-use]
+     (has-memory? memory-to-use 0.1))
+  ([memory-to-use free-percent]
+     (let [r (Runtime/getRuntime)
+           total-mem (. r maxMemory)
+           available-mem (get-available-memory)]
+       ;(println available-mem)
+       (and (or (> available-mem (* 2 memory-to-use))
+                (> memory-to-use total-mem))
+            (>= (/ available-mem total-mem) free-percent)))))
