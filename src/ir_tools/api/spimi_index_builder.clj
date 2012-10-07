@@ -2,6 +2,7 @@
   "Generates an (inverted) index for a collection of documents using
 the SPIMI algorithm (http://nlp.stanford.edu/IR-book/html/htmledition/single-pass-in-memory-indexing-1.html)."
   (:require [clojure.java.io :as io]
+            [clojure.string :as cstr]
             [ir-tools.api.inverted-index :as index-api]
             [ir-tools.api.common :as common-api])
   (:import [java.io File]))
@@ -9,7 +10,7 @@ the SPIMI algorithm (http://nlp.stanford.edu/IR-book/html/htmledition/single-pas
 ;; ## Forward Declarations
 
 (declare get-file-names get-available-memory has-memory?
-         write-temp-index-to-file)
+         write-temp-index-to-file join-files)
 
 ;; ## Public API
 
@@ -17,31 +18,37 @@ the SPIMI algorithm (http://nlp.stanford.edu/IR-book/html/htmledition/single-pas
 ;; file, cleans memory and starts building a new index. When all documents
 ;; are processed - merge all created files into one big index.
 
-(def i (atom 1))
 (defn process-collection
   "Adds all terms from a given collection (name of a directory with files)
 to one inverted index."
   [col]
-  (let [filenames (get-file-names col)]
+  (let [filenames (get-file-names col)
+        i (atom 1)]
     (common-api/fill-doc-ids index-api/doc-ids filenames)
     (doseq [file filenames]
       (when-not (has-memory? (.length (File. file)))
-        (write-temp-index-to-file))
+        (write-temp-index-to-file i))
       (index-api/fill-index-from-file index-api/index
                                       index-api/doc-ids file))
-    (write-temp-index-to-file)
-    (swap! i (fn [_] 1))
+    (write-temp-index-to-file i)
+    (join-files @i)
     nil))
 
 ;; ## Private API
 
 (defn- join-files
   "Join all temporary index files (with names 1, 2, 3...) into one big index."
-  [last-name]
-)
+  [next-num]
+  (let [temp-names (map str (range 1 next-num))
+        readers (map io/reader temp-names)]
+    (try
+      (loop [lines (map #(.readLine %) readers)]
+        (when-not (every? nil? lines)
+          (recur (map #(.readLine %) readers))))
+      (finally (doseq [r readers] (. r close))))))
 
 (defn- write-temp-index-to-file
-  []
+  [i]
   (common-api/write-collection-to-file @index-api/index (str @i))
   (swap! i inc)
   (swap! index-api/index (fn [_] (sorted-map))))
@@ -73,7 +80,7 @@ what percent of a memory should remain free."
      (let [r (Runtime/getRuntime)
            total-mem (. r maxMemory)
            available-mem (get-available-memory)]
-       ;(println available-mem)
+       (println available-mem)
        (and (or (> available-mem (* 2 memory-to-use))
                 (> memory-to-use total-mem))
             (>= (/ available-mem total-mem) free-percent)))))
