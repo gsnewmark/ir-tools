@@ -25,15 +25,13 @@ index or a 3-gram index."
 
 (defn process-query
   "Given a word with a wildcard, index and an auxiliary index find
-documents where the given word is present. Optional last argument specifies a
+documents where the given word is present. Last argument specifies a
 function that finds terms that correspond to a given query from an given
 aux (permuterm, 3-gram) index."
-  ([query index aux-index]
-     (process-query query index aux-index get-words-for-wildcard-permuterm))
-  ([query index aux-index find-words]
-     (let [words (find-words query aux-index)
-           words-sets (map #(vector % (get-val-for-word % index)) words)]
-       (into (sorted-map) words-sets))))
+  [query index aux-index find-words]
+  (let [words (find-words query aux-index)
+        words-sets (map #(vector % (get-val-for-word % index)) words)]
+    (into (sorted-map) words-sets)))
 
 ;; ## Shared Private API
 
