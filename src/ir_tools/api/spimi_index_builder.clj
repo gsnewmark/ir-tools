@@ -19,14 +19,17 @@ the SPIMI algorithm (http://nlp.stanford.edu/IR-book/html/htmledition/single-pas
 
 (defn process-collection
   "Adds all terms from a given collection (name of a directory with files)
-to one inverted index stored in a file with name res."
-  [col res]
+to one inverted index stored in a file with name res, also write document
+ids to a file with a name docids."
+  [col res docids]
   (let [filenames (get-file-names col)
         i (atom 1)]
     (common-api/fill-doc-ids index-api/doc-ids filenames)
+    (common-api/write-doc-ids-to-file index-api/doc-ids docids)
     (doseq [file filenames]
       (when-not (has-memory? (.length (File. file)))
-        (write-temp-index-to-file i))
+        (write-temp-index-to-file i)
+        (.gc (Runtime/getRuntime)))
       (index-api/fill-index-from-file index-api/index
                                       index-api/doc-ids file))
     (write-temp-index-to-file i)
@@ -45,16 +48,17 @@ stored in a file with a name result."
     (try
       (loop [lines (map #(vector % (.readLine %)) readers)]
         (let [;; Remove empty readers
-              non-nil (remove (comp nil? second) lines)
-              ;; Transform read strings to data structures
-              evaled (map #(vector (first %) (read-string (second %)))
-                          non-nil)]
-          (when-not (empty? evaled)
-            (let [;; Find 'minimal' word among current lines
+              non-nil (remove (comp nil? second) lines)]
+          (when-not (empty? non-nil)
+            (let [;; Transform read strings to data structures
+                  evaled (map #(vector (first %) (read-string (second %)))
+                              non-nil)
+                  ;; Find 'minimal' word among current lines
                   min-word (first (sort (map (comp first second) evaled)))
                   ;; Find set with docIDs for a current 'minimal' word
                   to-write-val (reduce
                                 into
+                                (sorted-set)
                                 ;; Extract sets with docIDs
                                 (map (comp second second)
                                      ;; Find elements with 'minimal' word
@@ -77,7 +81,7 @@ stored in a file with a name result."
   [i]
   (common-api/write-collection-to-file @index-api/index (str @i))
   (swap! i inc)
-  (swap! index-api/index (fn [_] (sorted-map))))
+  (reset! index-api/index (sorted-map)))
 
 ;; TODO make recursive
 (defn- get-file-names
@@ -91,9 +95,9 @@ stored in a file with a name result."
   "Returns an amount of available free memory."
   []
   (let [r (Runtime/getRuntime)
-        free-mem (. r freeMemory)
-        max-mem (. r maxMemory)
-        alloc-mem (. r totalMemory)]
+        free-mem (.freeMemory r)
+        max-mem (.maxMemory r)
+        alloc-mem (.totalMemory r)]
     (+ free-mem (- max-mem alloc-mem))))
 
 (defn- has-memory?
@@ -104,7 +108,7 @@ what percent of a memory should remain free."
      (has-memory? memory-to-use 0.1))
   ([memory-to-use free-percent]
      (let [r (Runtime/getRuntime)
-           total-mem (. r maxMemory)
+           total-mem (.maxMemory r)
            available-mem (get-available-memory)]
        ;(println available-mem)
        (and (or (> available-mem (* 2 memory-to-use))
