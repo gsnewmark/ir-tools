@@ -35,6 +35,8 @@ overall number of normalized tokens in a string (:tokens-count)."
       ;; Removes all symbols except characters, digits, underscores,
       ;; apostrophes and dashes from a token.
       (cstr/replace #"[^\w-']" "")
+      ;; Removes digits.
+      (cstr/replace #"\d" "")
       ;; Removes dashes, underscores, apostrophes at the beginning/end of
       ;; a token.
       (cstr/replace #"(^[\-_']+)|([\-_']+$)" "")

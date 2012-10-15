@@ -21,6 +21,7 @@
 (defn -main
   "Finds out what tool to call and calls it."
   [& args]
+  (apply dict-cli/build-dictionary args)
   ;(apply imatrix-cli/build-incidence-matrix args)
   ;(apply index-cli/build-inverted-index args)
   ;(apply biword-cli/build-biword-index args)
@@ -32,5 +33,5 @@
   ;(apply three-gram-index-cli/build-three-gram-index args)
   ;(apply binary-tree-cli/build-binary-tree args)
   ;(apply wildcard-query-cli/run-query args)
-  (apply spimi-cli/generate-index args)
+  ;(apply spimi-cli/generate-index args)
   )
