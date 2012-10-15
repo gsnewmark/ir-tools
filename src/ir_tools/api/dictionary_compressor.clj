@@ -22,9 +22,12 @@ http://nlp.stanford.edu/IR-book/html/htmledition/blocked-storage-1.html"
   "Transforms a block with words into a string representation."
   [block]
   (let [prefix (find-prefix block)
-        ind (count prefix)
-        block (map #(str (.substring % 0 ind) "|" (.substring % ind)) block)]
-    (apply str (map #(str (count %) %) block))))
+        ind    (count prefix)
+        size   (count (first block))
+        block  (map #(.substring % ind) block)]
+    (str size prefix
+         (when-not (empty? (first block)) (str "*" (first block)))
+         (apply str (map #(str (count %) "|" %) (rest block))))))
 
 (defn find-prefix
   "Finds same prefix for a block of words."
