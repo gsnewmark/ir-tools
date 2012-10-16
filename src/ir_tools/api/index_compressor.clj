@@ -13,18 +13,22 @@ http://nlp.stanford.edu/IR-book/html/htmledition/gamma-codes-1.html"
 
 ;; ## Public API
 
+; Example
+;(compress-index 4 (sorted-map "abc" [1 2] "bom" [5 6] "bomkl" [1] "bomm" [3 4 6] "cat" [7 8] "dit" [1 2 3] "jj" [4 5 6] "kols" [6 7 8] "mon" [1 2 3]))
+
 (defn compress-index
   "Compresses a given inverted index."
   [block-size index]
   (let [comp-dict (dcomp/compress-dictionary block-size (keys index))]
-    (into (sorted-map) (map compress-entry index))))
+    ;(println comp-dict)
+    (into (sorted-map) (map (partial compress-entry comp-dict) index))))
 
 ;; ## Private API
 
 (defn- compress-entry
   "Compresses a given index entry."
-  [[word ids]]
-  [word (seq->gamma-codes ids)])
+  [dict [word ids]]
+  [(dcomp/find-word-index dict word) (seq->gamma-codes ids)])
 
 (defn- seq->gamma-codes
   "Transforms a given sequence of numbers into a sequence of gamma code

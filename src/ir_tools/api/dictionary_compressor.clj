@@ -16,18 +16,28 @@ http://nlp.stanford.edu/IR-book/html/htmledition/blocked-storage-1.html"
   (let [blocks (partition block-size block-size '() dictionary)]
     (apply str (map block->string blocks))))
 
+(defn find-word-index
+  "Finds word's index in a dictionary."
+  [dict word]
+  (inc (.indexOf dict (str (count word) word))))
+
 ;; ## Private API
 
 (defn block->string
-  "Transforms a block with words into a string representation."
+  "Transforms a block of words into a string."
   [block]
-  (let [prefix (find-prefix block)
-        ind    (count prefix)
-        size   (count (first block))
-        block  (map #(.substring % ind) block)]
-    (str size prefix
-         (when-not (empty? (first block)) (str "*" (first block)))
-         (apply str (map #(str (count %) "|" %) (rest block))))))
+  (apply str (map #(str (count %) %) block)))
+
+(comment (defn block->string
+   "Transforms a block with words into a string representation."
+   [block]
+   (let [prefix (find-prefix block)
+         ind    (count prefix)
+         size   (count (first block))
+         block  (map #(.substring % ind) block)]
+     (str size prefix
+          (when-not (empty? (first block)) (str "*" (first block)))
+          (apply str (map #(str (count %) "|" %) (rest block)))))))
 
 ;; TODO how to correctly find prefix in block,
 ;; for instance ["a" "ba" "bab" "bac" "d"]
