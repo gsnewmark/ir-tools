@@ -9,7 +9,7 @@ http://nlp.stanford.edu/IR-book/html/htmledition/gamma-codes-1.html"
 
 ;; ## Forward declarations
 
-(declare get-gamma-code seq->gamma-codes get-unary-code)
+(declare get-gamma-code seq->gamma-codes get-unary-code compress-entry)
 
 ;; ## Public API
 
@@ -17,10 +17,14 @@ http://nlp.stanford.edu/IR-book/html/htmledition/gamma-codes-1.html"
   "Compresses a given inverted index."
   [block-size index]
   (let [comp-dict (dcomp/compress-dictionary block-size (keys index))]
-    (count comp-dict)
-    ))
+    (into (sorted-map) (map compress-entry index))))
 
 ;; ## Private API
+
+(defn- compress-entry
+  "Compresses a given index entry."
+  [[word ids]]
+  [word (seq->gamma-codes ids)])
 
 (defn- seq->gamma-codes
   "Transforms a given sequence of numbers into a sequence of gamma code
@@ -28,7 +32,7 @@ using the first element as a 'root'."
   [num-seq]
   (let [first-elem (first num-seq)
         gaps       (map #(apply - (reverse %)) (partition 2 1 num-seq))]
-    (conj gaps first-elem)))
+    (map get-gamma-code (cons first-elem gaps))))
 
 (defn- get-gamma-code
   "Returns a gamma code for a given number."
@@ -38,7 +42,7 @@ using the first element as a 'root'."
         length-unary  (get-unary-code (count offset))
         gamma-str     (str length-unary offset)
         bit-set       (BitSet. (count gamma-str))
-        gamma-str      (reverse gamma-str)]
+        gamma-str     (reverse gamma-str)]
     (dotimes [i (count gamma-str)]
       (when (= \1 (nth gamma-str i))
         (.set bit-set i)))

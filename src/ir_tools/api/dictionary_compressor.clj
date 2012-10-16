@@ -29,11 +29,13 @@ http://nlp.stanford.edu/IR-book/html/htmledition/blocked-storage-1.html"
          (when-not (empty? (first block)) (str "*" (first block)))
          (apply str (map #(str (count %) "|" %) (rest block))))))
 
+;; TODO how to correctly find prefix in block,
+;; for instance ["a" "ba" "bab" "bac" "d"]
 (defn find-prefix
   "Finds same prefix for a block of words."
   [block]
   (let [block (sort-by count block)]
     (loop [prefix (first block)]
-      (if (every? #(.startsWith % prefix) block)
+      (if (some #(.startsWith % prefix) block)
         prefix
         (recur (apply str (butlast prefix)))))))
