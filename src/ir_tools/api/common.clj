@@ -49,7 +49,8 @@ overall number of normalized tokens in a string (:tokens-count)."
   "Fills a document ids map (references by a d-ref) with a given list
 of files."
   [d-ref files]
-  (doseq [i (range (count files))] (swap! d-ref assoc (nth files i) i)))
+  (doseq [i (range 1 (inc (count files)))]
+    (swap! d-ref assoc (nth files (dec i)) i)))
 
 (defn write-doc-ids-to-file
   "Writes a document ids (from a d-ref) to a file with a given filename in a
