@@ -6,7 +6,6 @@
 
 
 ;; Public API
-
 (defn build-inverted-index
   [& args]
   (let [file-to-write (first args)
