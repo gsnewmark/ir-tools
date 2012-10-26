@@ -1,7 +1,8 @@
 (ns ir-tools.api.fb2-tools
   "Functions to correctly parse FB2 files (including zoning)."
   (:require [clojure [xml :as cxml]
-                     [string :as cstr]]))
+                     [string :as cstr]]
+            [clojure.java.io :as cio]))
 
 
 ;; ## Forward declarations
@@ -10,7 +11,14 @@
 
 ;; ## Public API
 
-(defn extract-info
+(defn process-file
+  [filename]
+  (with-open [file (cio/file filename)]
+    (extract-info file)))
+
+;; ## Private API
+
+(defn- extract-info
   "Extracts required title info (author, title) and actual body
 text."
   [fb2-xml]
@@ -27,8 +35,6 @@ text."
         ;; TODO grab only text from body
         body (extract-text (get-text-attr fb2-map [:body]))]
     {:author author :title title :body body}))
-
-;; ## Private API
 
 (defn- get-text-attr
   "Gets a given part of a map produced by cxml/parse (elt) specified by a list

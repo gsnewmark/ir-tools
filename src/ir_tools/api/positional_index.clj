@@ -25,8 +25,8 @@
 ;; ## Public API
 
 (defn fill-positional-index-from-file
-  "Adds all pairs of words from a file with a given filename to an
-biword index referenced by a b-ref, uses a map with document name -
+  "Adds all words from a file with a given filename along with position to a
+positional index referenced by a p-ref, uses a map with document name -
 document id pairs referenced by a d-ref (must be generated before adding
 terms). Returns a map with current positional index (:results),
  document ids (:doc-ids), number of words (:tokens-count) and
