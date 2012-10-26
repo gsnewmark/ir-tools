@@ -1,21 +1,12 @@
 (ns ir-tools.api.fb2-tools
   "Functions to correctly parse FB2 files (including zoning)."
   (:require [clojure [xml :as cxml]
-                     [string :as cstr]]
-            [ir-tools.api [common :as common]
-                          [positional-index :as p-index]]))
+                     [string :as cstr]]))
 
 
 ;; ## Forward declarations
 
 (declare process-one-level get-text-attr process-one-level extract-text)
-
-;; ## Data Structures
-
-(def positional-index-title (atom (sorted-map)))
-(def positional-index-author (atom (sorted-map)))
-(def positional-index- (atom (sorted-map)))
-(def doc-ids (atom {}))
 
 ;; ## Public API
 
