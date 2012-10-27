@@ -1,7 +1,8 @@
 (ns ir-tools.api.common
   "Functions that a used by other API parts."
   (:require [clojure.string :as cstr]
-            [clojure.java.io :as io]))
+            [clojure.java.io :as io])
+  (:import [java.io File]))
 
 
 ;; ## Forward declarations
@@ -63,6 +64,14 @@ format 'filename - file id'."
 
 ;; ## File interaction
 
+;; TODO make recursive
+(defn get-file-names
+  "Retrieves names of all files in a given directory (not recursive)."
+  [dir]
+  (remove nil?
+          (map #(when-not (.isDirectory %) (.getAbsolutePath %))
+               (.listFiles (File. dir)))))
+
 (defn process-file
   "Process a tokens from string extracted from a file with a given filename
 using a given operation. If operations isn't given - creates a
@@ -82,6 +91,10 @@ using the given operation."
   [filename ds op]
   (with-open [rdr (io/reader filename)]
     (into ds (map op (line-seq rdr)))))
+
+(defn save-to-file
+  [ds filename]
+  (binding [*out* (java.io.FileWriter. filename)] (prn ds)))
 
 (defn write-collection-to-file
   "Writes a given data collection to a file with a given name. Each element

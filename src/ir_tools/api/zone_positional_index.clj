@@ -6,6 +6,10 @@ against it."
                           [fb2-tools :as fb2-tools]]))
 
 
+;; ## Forward declarations
+
+(declare calc-score sort-results add-zone)
+
 ;; ## Data Structures
 
 ;; Each zone is an element of a map - its name is key, and atom with actual
@@ -14,6 +18,9 @@ against it."
 
 ;; A map with pairs filename - docID.
 (def doc-ids (atom {}))
+
+;; Zones' weights.
+(def weights {:author 0.3 :title 0.3 :body 0.4})
 
 ;; ## Public API
 
@@ -29,15 +36,14 @@ their weight."
               (first %)
               (p-query/process-query query (deref (second %)) doc-ids))
             index))
-   {:author 0.4 :title 0.3 :body 0.3}))
+   weights))
 
-(defn fill-zoned-positional-index-from-file
+(defn fill-zone-positional-index-from-file
   "Adds all words from a file with a given filename along with position to a
 zoned positional index referenced by a z-ref, uses a map with document name -
 document id pairs referenced by a d-ref (must be generated before adding
 terms). Returns a map with current zoned index (:results),
-document ids (:doc-ids), number of words (:tokens-count),
-file's size (:size)."
+document ids (:doc-ids), file's size (:size)."
   [z-ref d-ref filename]
   (let [r     (fb2-tools/process-file filename)
         zones (keys (dissoc r :size))]
@@ -52,7 +58,8 @@ file's size (:size)."
 (defn- add-zone
   "Adds a zone to a zone index."
   [i-ref zone-name]
-  (swap! i-ref assoc zone-name (atom (sorted-map))))
+  (when-not (contains? @i-ref zone-name)
+    (swap! i-ref assoc zone-name (atom (sorted-map)))))
 
 (defn- sort-results
   "Calculate a weighted zone score for a query and results."

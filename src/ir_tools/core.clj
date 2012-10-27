@@ -9,7 +9,8 @@
                           [phrase-query :as biword-query-cli]
                           [wildcard-query :as wildcard-query-cli]
                           [positional-query :as positional-query-cli]
-                          [spimi-index-builder :as spimi-cli]]
+                          [spimi-index-builder :as spimi-cli]
+                          [zone-positional-index :as zone-cli]]
             [ir-tools.cli.aux-indices
              [permuterm-index :as permuterm-index-cli]
              [three-gram-index :as three-gram-index-cli]
@@ -32,5 +33,6 @@
   ;(apply three-gram-index-cli/build-three-gram-index args)
   ;(apply binary-tree-cli/build-binary-tree args)
   ;(apply wildcard-query-cli/run-query args)
-  (apply spimi-cli/generate-index args)
+  ;(apply spimi-cli/generate-index args)
+  (apply zone-cli/build-zone-positional-index args)
   )

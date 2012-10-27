@@ -22,7 +22,7 @@ the SPIMI algorithm (http://nlp.stanford.edu/IR-book/html/htmledition/single-pas
 to one inverted index stored in a file with name res, also write document
 ids to a file with a name docids."
   [col res docids]
-  (let [filenames (get-file-names col)
+  (let [filenames (common-api/get-file-names col)
         i (atom 1)]
     (common-api/fill-doc-ids index-api/doc-ids filenames)
     (common-api/write-doc-ids-to-file index-api/doc-ids docids)
@@ -82,14 +82,6 @@ stored in a file with a name result."
   (common-api/write-collection-to-file @index-api/index (str @i))
   (swap! i inc)
   (reset! index-api/index (sorted-map)))
-
-;; TODO make recursive
-(defn- get-file-names
-  "Retrieves names of all files in a given directory (not recursive)."
-  [dir]
-  (remove nil?
-          (map #(when-not (.isDirectory %) (.getAbsolutePath %))
-               (.listFiles (File. dir)))))
 
 (defn- get-available-memory
   "Returns an amount of available free memory."
