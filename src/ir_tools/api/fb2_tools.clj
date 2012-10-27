@@ -33,7 +33,6 @@ text."
         author (str name " " surname)
         title (extract-text
                (get-text-attr fb2-map [:description :title-info :book-title]))
-        ;; TODO grab only text from body
         body (extract-text (get-text-attr fb2-map [:body]))]
     {:author author :title title :body body}))
 
