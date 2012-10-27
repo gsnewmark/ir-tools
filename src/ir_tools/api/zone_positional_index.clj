@@ -3,7 +3,8 @@
 against it."
   (:require [ir-tools.api [positional-index :as p-index]
                           [positional-query :as p-query]
-                          [fb2-tools :as fb2-tools]]))
+                          [fb2-tools :as fb2-tools]]
+            [clojure.string :as cstr]))
 
 
 ;; ## Forward declarations
@@ -20,7 +21,7 @@ against it."
 (def doc-ids (atom {}))
 
 ;; Zones' weights.
-(def weights {:author 0.3 :title 0.3 :body 0.4})
+(def weights {:author 0.4 :title 0.4 :body 0.2})
 
 ;; ## Public API
 
@@ -29,14 +30,18 @@ against it."
 positional index and document ids list. Also, sorts results according to
 their weight."
   [query index doc-ids]
-  (sort-results
-   (reduce into
-           (map
-            #(hash-map
-              (first %)
-              (p-query/process-query query (deref (second %)) doc-ids))
-            index))
-   weights))
+  (let [r  (sort-results
+            (reduce merge
+                    (map
+                     #(hash-map
+                       (first %)
+                       (p-query/process-query query (deref (second %))
+                                              doc-ids))
+                     index))
+            weights)
+        lf (fn [i] (for [[t n] doc-ids :when (= i n)] t))]
+    (cstr/join "\n"
+               (flatten (map #(vector (first %) (map lf (second %))) r)))))
 
 (defn fill-zone-positional-index-from-file
   "Adds all words from a file with a given filename along with position to a
@@ -68,9 +73,8 @@ document ids (:doc-ids), file's size (:size)."
         scores  (into (sorted-map)
                       (map #(hash-map % (calc-score results weights %))
                            indices))]
-    (into (sorted-map-by
-           (fn [key1 key2] (compare (get scores key2) (get scores key1))))
-          scores)))
+    (reverse (map #(let [[s l] %] [s (map first l)])
+                  (into (sorted-map) (group-by second scores))))))
 
 (defn calc-score
   "Calculates a weighted score for a given weights, query results and doc-id."

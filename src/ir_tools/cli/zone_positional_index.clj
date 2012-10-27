@@ -31,10 +31,10 @@
                   zone-positional-api/doc-ids)
                  sources))
                total-size (apply + (map :size sizes))]
-           (common-api/write-doc-ids-to-file
+           (common-api/save-to-file
             zone-positional-api/doc-ids file-to-write-ids)
            (common-api/save-to-file
-            @zone-positional-api/zone-positional-index
+            zone-positional-api/zone-positional-index
             file-to-write)
            (println (apply str (repeat 80 "-")))
            (println)

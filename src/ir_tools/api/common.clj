@@ -2,6 +2,7 @@
   "Functions that a used by other API parts."
   (:require [clojure.string :as cstr]
             [clojure.java.io :as io])
+  (:use [deep-freeze.core])
   (:import [java.io File]))
 
 
@@ -94,7 +95,13 @@ using the given operation."
 
 (defn save-to-file
   [ds filename]
-  (binding [*out* (java.io.FileWriter. filename)] (prn ds)))
+  (let [os (java.io.DataOutputStream. (java.io.FileOutputStream. filename))]
+    (freeze-to-stream! ds os)))
+
+(defn load-from-file
+  [filename]
+  (let [is (java.io.DataInputStream. (java.io.FileInputStream. filename))]
+    (thaw-from-stream! is)))
 
 (defn write-collection-to-file
   "Writes a given data collection to a file with a given name. Each element
