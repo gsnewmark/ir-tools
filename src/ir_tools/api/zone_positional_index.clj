@@ -25,12 +25,16 @@
 zoned positional index referenced by a z-ref, uses a map with document name -
 document id pairs referenced by a d-ref (must be generated before adding
 terms). Returns a map with current zoned index (:results),
- document ids (:doc-ids), number of words (:tokens-count)."
+document ids (:doc-ids), number of words (:tokens-count),
+file's size (:size)."
   [z-ref d-ref filename]
-  (let [r (com/process-file generate-term-position filename)]
-    (doseq [pair (:results r)]
-      (add-term-to-positional-index p-ref d-ref pair filename))
-    (assoc r :results @p-ref :doc-ids @d-ref)))
+  (let [r     (fb2-tools/process-file filename)
+        zones (keys (dissoc r :size))]
+    (doseq [z zones]
+      (add-zone z-ref z)
+      (p-index/fill-positional-index-from-string (z @z-ref) d-ref
+                                                 (z r) filename))
+    {:size (:size r) :doc-ids @d-ref :results @z-ref}))
 
 ;; ## Private API
 

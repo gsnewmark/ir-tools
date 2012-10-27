@@ -37,6 +37,18 @@ file's size (:size)."
       (add-term-to-positional-index p-ref d-ref pair filename))
     (assoc r :results @p-ref :doc-ids @d-ref)))
 
+(defn fill-positional-index-from-string
+  "Adds all words from a string (from file) along with positions to a
+positional index referenced by a p-ref, uses a map with document name -
+document id pairs referenced by a d-ref (must be generated before adding
+terms). Returns a map with current positional index (:results),
+ document ids (:doc-ids), number of words (:tokens-count)."
+  [p-ref d-ref string filename]
+  (let [r (common/process-string generate-term-position string)]
+    (doseq [pair (:results r)]
+      (add-term-to-positional-index p-ref d-ref pair filename))
+    (assoc r :results @p-ref :doc-ids @d-ref)))
+
 (defn add-term-to-positional-index
   "Adds a given term and it's positions to a positional
 index (referenced by a p-ref) or updates its positions."

@@ -7,14 +7,15 @@
 
 ;; ## Forward declarations
 
-(declare process-one-level get-text-attr process-one-level extract-text)
+(declare process-one-level get-text-attr process-one-level extract-text
+         extract-info)
 
 ;; ## Public API
 
 (defn process-file
   [filename]
-  (with-open [file (cio/file filename)]
-    (extract-info file)))
+  (let [file (cio/file filename)]
+    (assoc (extract-info file) :size (.length file))))
 
 ;; ## Private API
 
@@ -67,15 +68,3 @@ gets values of all element with specified tag."
                    (doall (for [s (:content el)]
                             (let [c (:content s)]
                               (extract-text c))))))))))))
-
-
-
-
-
-
-
-
-
-
-
-
