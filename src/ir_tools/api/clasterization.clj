@@ -5,7 +5,7 @@ clasterize index.")
 
 ;; ## Forward declarations
 
-(declare calculate-weight calculate-length dot-product)
+(declare calculate-weight calculate-length dot-product similarity-quot)
 
 ;; ## Data Structures
 
@@ -51,7 +51,7 @@ d-ref)."
     (Math/sqrt (apply + (map #(* % %) weights)))))
 
 (defn- dot-product
-  "Gets a dot product of two documents from a vector space model."
+  "Calculates a dot product of two documents from a vector space model."
   [doc1 doc2]
   (let [[_ words-map1] doc1
         [_ words-map2] doc2
@@ -59,3 +59,9 @@ d-ref)."
         words-map2     (dissoc words-map2 :length)
         words1         (keys words-map1)]
     (apply + (map #(* (get words-map1 % 0) (get words-map2 % 0)) words1))))
+
+(defn- similarity-quot
+  "Calculates a similarity quotient between two documents."
+  [doc1 doc2]
+  (/ (dot-product doc1 doc2)
+     (* (:length (second doc1)) (:length (second doc2)))))
