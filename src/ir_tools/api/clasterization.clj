@@ -5,7 +5,7 @@ clasterize index.")
 
 ;; ## Forward declarations
 
-(declare calculate-weight)
+(declare calculate-weight calculate-length)
 
 ;; ## Data Structures
 
@@ -16,11 +16,21 @@ clasterize index.")
 
 ;; ## Public API
 
+(defn create-vector-space-model
+  "Creates a vector space model (saves to an atom referenced by a v-ref) of a
+positional index (referenced by a p-ref) of a given documents (referenced by a
+d-ref)."
+  [v-ref p-ref d-ref]
+  (reset! v-ref (positional-index->vector-space @p-ref (count @d-ref))))
+
 (defn positional-index->vector-space
   "Transforms a given positional index to a vector space model."
   [pos-index n]
-  (reduce (partial merge-with merge)
-          (map (partial calculate-weight n) pos-index)))
+  (into
+   {}
+   (map #(let [[key val] %] [key (assoc val :length (calculate-length %))])
+        (reduce (partial merge-with merge)
+                (map (partial calculate-weight n) pos-index)))))
 
 ;; ## Private API
 
@@ -32,3 +42,10 @@ clasterize index.")
         df           (count docs)
         idf          (Math/log10 (/ n df))]
     (into {} (map #(vector % {word (* (:count (get stats %)) idf)}) docs))))
+
+(defn- calculate-length
+  "Calculates a length of a document in a vector space model."
+  [doc]
+  (let [[doc-id words] doc
+        weights (vals words)]
+    (Math/sqrt (apply + (map #(* % %) weights)))))
