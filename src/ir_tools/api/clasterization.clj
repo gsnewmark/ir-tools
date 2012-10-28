@@ -5,7 +5,7 @@ clasterize index.")
 
 ;; ## Forward declarations
 
-(declare calculate-weight calculate-length)
+(declare calculate-weight calculate-length dot-product)
 
 ;; ## Data Structures
 
@@ -46,6 +46,16 @@ d-ref)."
 (defn- calculate-length
   "Calculates a length of a document in a vector space model."
   [doc]
-  (let [[doc-id words] doc
-        weights (vals words)]
+  (let [[_ words] doc
+        weights   (vals words)]
     (Math/sqrt (apply + (map #(* % %) weights)))))
+
+(defn- dot-product
+  "Gets a dot product of two documents from a vector space model."
+  [doc1 doc2]
+  (let [[_ words-map1] doc1
+        [_ words-map2] doc2
+        words-map1     (dissoc words-map1 :length)
+        words-map2     (dissoc words-map2 :length)
+        words1         (keys words-map1)]
+    (apply + (map #(* (get words-map1 % 0) (get words-map2 % 0)) words1))))
