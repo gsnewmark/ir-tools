@@ -5,11 +5,29 @@
 
 ;; ## Forward declarations
 
-(declare find-max-in-map)
+(declare find-max-in-map clasterize-vector-space-model)
 
 ;; ## Data Structures
 
+(def clasterized-vsm (atom {}))
+
 ;; ## Public API
+
+(defn create-clasterized-vsm
+  "Stores a clasterized representation of a vector space model (in a atom
+referenced by a cvsm-ref) stored is a vsm-ref."
+  [cvsm-ref vsm-ref]
+  (let [cvsm-doc (clasterize-vector-space-model @vsm-ref)
+        cvsm     (into
+                  {}
+                  (map
+                   (fn [a]
+                     (let [[k v] a]
+                       (vector k (into
+                                  {}
+                                  (map #(vector % (get @vsm-ref %)) v)))))
+                   cvsm-doc))]
+    (reset! cvsm-ref cvsm)))
 
 (defn clasterize-vector-space-model
   "Clasterizes a given vector space model."
@@ -18,8 +36,8 @@
         doc-ids        (shuffle (keys vsm))
         leaders        (take leaders-length doc-ids)
         followers      (drop leaders-length doc-ids)]
-    (println leaders)
-    (println followers)
+    ;(println "Leaders: " leaders)
+    ;(println "Followers: " followers)
     (into
      (into {} (map #(vector % (list %)) leaders))
      (map
