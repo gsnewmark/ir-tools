@@ -4,14 +4,14 @@
 
 ;; ## Forward declarations
 
-(declare calculate-weight calculate-length dot-product similarity-quot
+(declare calculate-weight calculate-length dot-product
          positional-index->vector-space)
 
 ;; ## Data Structures
 
 ;; Vector space model - map with documents as a keys and another map as a
 ;; value - {:word weight}.
-;; {:doc-id {:word weight}}
+;; {:doc-id {:word weight :length vec-length}}
 (def vector-space-model (atom {}))
 
 ;; ## Public API
@@ -31,6 +31,12 @@ d-ref)."
    (map #(let [[key val] %] [key (assoc val :length (calculate-length %))])
         (reduce (partial merge-with merge)
                 (map (partial calculate-weight n) pos-index)))))
+
+(defn similarity-quot
+  "Calculates a similarity quotient between two documents."
+  [doc1 doc2]
+  (/ (dot-product doc1 doc2)
+     (* (:length (second doc1)) (:length (second doc2)))))
 
 ;; ## Private API
 
@@ -59,9 +65,3 @@ d-ref)."
         words-map2     (dissoc words-map2 :length)
         words1         (keys words-map1)]
     (apply + (map #(* (get words-map1 % 0) (get words-map2 % 0)) words1))))
-
-(defn- similarity-quot
-  "Calculates a similarity quotient between two documents."
-  [doc1 doc2]
-  (/ (dot-product doc1 doc2)
-     (* (:length (second doc1)) (:length (second doc2)))))
