@@ -11,7 +11,8 @@
                           [positional-query :as positional-query-cli]
                           [zone-positional-query :as zone-query-cli]
                           [spimi-index-builder :as spimi-cli]
-                          [zone-positional-index :as zone-cli]]
+                          [zone-positional-index :as zone-cli]
+                          [clasterized-vsm :as c-vsm]]
             [ir-tools.cli.aux-indices
              [permuterm-index :as permuterm-index-cli]
              [three-gram-index :as three-gram-index-cli]
@@ -36,5 +37,6 @@
   ;(apply wildcard-query-cli/run-query args)
   ;(apply spimi-cli/generate-index args)
   ;(apply zone-cli/build-zone-positional-index args)
-  (apply zone-query-cli/run-query args)
+  ;(apply zone-query-cli/run-query args)
+  (apply c-vsm/build-clasterized-vsm args)
   )
